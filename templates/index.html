@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Isolation Prediction</title>
+    <style>
+        /* CSS to center the container and style the form */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-image: url("{{ url_for('static', filename='background_ai.jpg') }}"); /* Flask background path */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+        }
+
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            padding: 30px;
+            background-color: rgba(255, 255, 255, 0.9); /* Slight transparency */
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 1200px;
+        }
+        .form-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .form-column {
+            display: flex;
+            flex-direction: column;
+            width: 48%;
+        }
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        label {
+            font-weight: bold;
+            margin-right: 10px;
+            width: 250px; /* Consistent width for labels */
+        }
+        input[type="number"] {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            width: 50px; /* Adjust the width for the number inputs */
+        }
+        button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        /* Predictions in top-right corner of the entire webpage */
+        .predictions {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #ffffff;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 250px;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .input-group input {
+            width: 50px; /* Reduce width for individual inputs */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Predict Isolation</h1>
+        <form action="/predict" method="POST" onsubmit="combineInputs(event)">
+            <div class="form-row">
+                <!-- First column of fields -->
+                <div class="form-column">
+                    <div class="form-group">
+                        <label for="total_screen_time">Total Screen Time (min):</label>
+                        <div class="input-group">
+                            <input type="number" id="total_screen_time_hundreds" name="total_screen_time_hundreds" value="0" min="0" max="9" required>
+                            <input type="number" id="total_screen_time_tens" name="total_screen_time_tens" value="0" min="0" max="9" required>
+                            <input type="number" id="total_screen_time_ones" name="total_screen_time_ones" value="0" min="0" max="9" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="social_networking">Social Networking (min):</label>
+                        <div class="input-group">
+                            <input type="number" id="social_networking_hundreds" name="social_networking_hundreds" value="0" min="0" max="9" required>
+                            <input type="number" id="social_networking_tens" name="social_networking_tens" value="0" min="0" max="9" required>
+                            <input type="number" id="social_networking_ones" name="social_networking_ones" value="0" min="0" max="9" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="reading_and_research">Reading & Research (min):</label>
+                        <div class="input-group">
+                            <input type="number" id="reading_and_research_hundreds" name="reading_and_research_hundreds" value="0" min="0" max="9" required>
+                            <input type="number" id="reading_and_research_tens" name="reading_and_research_tens" value="0" min="0" max="9" required>
+                            <input type="number" id="reading_and_research_ones" name="reading_and_research_ones" value="0" min="0" max="9" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="other">Other Activities (min):</label>
+                        <div class="input-group">
+                            <input type="number" id="other_hundreds" name="other_hundreds" value="0" min="0" max="9" required>
+                            <input type="number" id="other_tens" name="other_tens" value="0" min="0" max="9" required>
+                            <input type="number" id="other_ones" name="other_ones" value="0" min="0" max="9" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="productivity">Productivity (min):</label>
+                        <div class="input-group">
+                            <input type="number" id="productivity_hundreds" name="productivity_hundreds" value="0" min="0" max="9" required>
+                            <input type="number" id="productivity_tens" name="productivity_tens" value="0" min="0" max="9" required>
+                            <input type="number" id="productivity_ones" name="productivity_ones" value="0" min="0" max="9" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="health_and_fitness">Health & Fitness (min):</label>
+                        <div class="input-group">
+                            <input type="number" id="health_and_fitness_hundreds" name="health_and_fitness_hundreds" value="0" min="0" max="9" required>
+                            <input type="number" id="health_and_fitness_tens" name="health_and_fitness_tens" value="0" min="0" max="9" required>
+                            <input type="number" id="health_and_fitness_ones" name="health_and_fitness_ones" value="0" min="0" max="9" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="entertainment">Entertainment (min):</label>
+                        <div class="input-group">
+                            <input type="number" id="entertainment_hundreds" name="entertainment_hundreds" value="0" min="0" max="9" required>
+                            <input type="number" id="entertainment_tens" name="entertainment_tens" value="0" min="0" max="9" required>
+                            <input type="number" id="entertainment_ones" name="entertainment_ones" value="0" min="0" max="9" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="creativity">Creativity (min):</label>
+                        <div class="input-group">
+                            <input type="number" id="creativity_hundreds" name="creativity_hundreds" value="0" min="0" max="9" required>
+                            <input type="number" id="creativity_tens" name="creativity_tens" value="0" min="0" max="9" required>
+                            <input type="number" id="creativity_ones" name="creativity_ones" value="0" min="0" max="9" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Second column of fields -->
+                <div class="form-column">
+                    <div class="form-group">
+                        <label for="yoga">Yoga (min):</label>
+                        <div class="input-group">
+                            <input type="number" id="yoga_hundreds" name="yoga_hundreds" value="0" min="0" max="9" required>
+                            <input type="number" id="yoga_tens" name="yoga_tens" value="0" min="0" max="9" required>
+                            <input type="number" id="yoga_ones" name="yoga_ones" value="0" min="0" max="9" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="movies">Movies (min):</label>
+                        <div class="input-group">
+                            <input type="number" id="movies_hundreds" name="movies_hundreds" value="0" min="0" max="9" required>
+                            <input type="number" id="movies_tens" name="movies_tens" value="0" min="0" max="9" required>
+                            <input type="number" id="movies_ones" name="movies_ones" value="0" min="0" max="9" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="gaming">Gaming (min):</label>
+                        <div class="input-group">
+                            <input type="number" id="gaming_hundreds" name="gaming_hundreds" value="0" min="0" max="9" required>
+                            <input type="number" id="gaming_tens" name="gaming_tens" value="0" min="0" max="9" required>
+                            <input type="number" id="gaming_ones" name="gaming_ones" value="0" min="0" max="9" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="community_events">Community Events (min):</label>
+                        <div class="input-group">
+                            <input type="number" id="community_events_hundreds" name="community_events_hundreds" value="0" min="0" max="9" required>
+                            <input type="number" id="community_events_tens" name="community_events_tens" value="0" min="0" max="9" required>
+                            <input type="number" id="community_events_ones" name="community_events_ones" value="0" min="0" max="9" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="family_time">Family Time (min):</label>
+                        <div class="input-group">
+                            <input type="number" id="family_time_hundreds" name="family_time_hundreds" value="0" min="0" max="9" required>
+                            <input type="number" id="family_time_tens" name="family_time_tens" value="0" min="0" max="9" required>
+                            <input type="number" id="family_time_ones" name="family_time_ones" value="0" min="0" max="9" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="outdoor_activities">Outdoor Activities (min):</label>
+                        <div class="input-group">
+                            <input type="number" id="outdoor_activities_hundreds" name="outdoor_activities_hundreds" value="0" min="0" max="9" required>
+                            <input type="number" id="outdoor_activities_tens" name="outdoor_activities_tens" value="0" min="0" max="9" required>
+                            <input type="number" id="outdoor_activities_ones" name="outdoor_activities_ones" value="0" min="0" max="9" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="volunteering">Volunteering (min):</label>
+                        <div class="input-group">
+                            <input type="number" id="volunteering_hundreds" name="volunteering_hundreds" value="0" min="0" max="9" required>
+                            <input type="number" id="volunteering_tens" name="volunteering_tens" value="0" min="0" max="9" required>
+                            <input type="number" id="volunteering_ones" name="volunteering_ones" value="0" min="0" max="9" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit button -->
+            <button type="submit">Submit</button>
+        </form>
+
+        <!-- Prediction Output (Top-right corner of the entire webpage) -->
+        <div id="predictions" class="predictions">
+            <h3>Predictions:</h3>
+            <p id="physical_isolation">Physical Isolation: 0</p>
+            <p id="digital_isolation">Digital Isolation: 0</p>
+            <p id="social_isolation">Social Isolation: 0</p>
+        </div>
+    </div>
+
+    <script>
+        function combineInputs(event) {
+            // Prevent form from submitting immediately
+            event.preventDefault();
+
+            function getCombinedValue(hundredsId, tensId, onesId) {
+                let hundreds = document.getElementById(hundredsId).value;
+                let tens = document.getElementById(tensId).value;
+                let ones = document.getElementById(onesId).value;
+                return parseInt(hundreds + tens + ones);
+            }
+
+            // Get combined values for all input fields
+            let totalScreenTime = getCombinedValue("total_screen_time_hundreds", "total_screen_time_tens", "total_screen_time_ones");
+            let socialNetworking = getCombinedValue("social_networking_hundreds", "social_networking_tens", "social_networking_ones");
+            let readingAndResearch = getCombinedValue("reading_and_research_hundreds", "reading_and_research_tens", "reading_and_research_ones");
+            let otherActivities = getCombinedValue("other_hundreds", "other_tens", "other_ones");
+            let productivity = getCombinedValue("productivity_hundreds", "productivity_tens", "productivity_ones");
+            let healthAndFitness = getCombinedValue("health_and_fitness_hundreds", "health_and_fitness_tens", "health_and_fitness_ones");
+            let entertainment = getCombinedValue("entertainment_hundreds", "entertainment_tens", "entertainment_ones");
+            let creativity = getCombinedValue("creativity_hundreds", "creativity_tens", "creativity_ones");
+
+            let yoga = getCombinedValue("yoga_hundreds", "yoga_tens", "yoga_ones");
+            let movies = getCombinedValue("movies_hundreds", "movies_tens", "movies_ones");
+            let gaming = getCombinedValue("gaming_hundreds", "gaming_tens", "gaming_ones");
+            let communityEvents = getCombinedValue("community_events_hundreds", "community_events_tens", "community_events_ones");
+            let familyTime = getCombinedValue("family_time_hundreds", "family_time_tens", "family_time_ones");
+            let outdoorActivities = getCombinedValue("outdoor_activities_hundreds", "outdoor_activities_tens", "outdoor_activities_ones");
+            let volunteering = getCombinedValue("volunteering_hundreds", "volunteering_tens", "volunteering_ones");
+
+            // Example mock prediction function - Replace with real model call
+            function mockPrediction(inputs) {
+                return {
+                    physicalIsolation: inputs.totalScreenTime > 20 ? "No" : "Yes",
+                    digitalIsolation: inputs.socialNetworking > 5 ? "No" : "Yes",
+                    socialIsolation: inputs.totalScreenTime < 10 && inputs.socialNetworking < 3 ? "No" : "Yes"
+                };
+            }
+
+            // Combine inputs for prediction
+            let predictionInputs = {
+                totalScreenTime: totalScreenTime,
+                socialNetworking: socialNetworking,
+                readingAndResearch: readingAndResearch,
+                otherActivities: otherActivities,
+                productivity: productivity,
+                healthAndFitness: healthAndFitness,
+                entertainment: entertainment,
+                creativity: creativity,
+                yoga: yoga,
+                movies: movies,
+                gaming: gaming,
+                communityEvents: communityEvents,
+                familyTime: familyTime,
+                outdoorActivities: outdoorActivities,
+                volunteering: volunteering
+            };
+
+            // Get predictions
+            let predictions = mockPrediction(predictionInputs);
+
+            // Display predictions
+            document.getElementById("physical_isolation").innerText = "Physical Isolation: " + predictions.physicalIsolation;
+            document.getElementById("digital_isolation").innerText = "Digital Isolation: " + predictions.digitalIsolation;
+            document.getElementById("social_isolation").innerText = "Social Isolation: " + predictions.socialIsolation;
+        }
+    </script>
+</body>
+</html>
